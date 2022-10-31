@@ -1,0 +1,28 @@
+12:50:59.443 [main] ERROR client.Client - Permission denied: connect
+java.net.SocketException: Permission denied: connect
+	at java.net.PlainSocketImpl.connect0(Native Method) ~[?:?]
+	at java.net.PlainSocketImpl.socketConnect(PlainSocketImpl.java:101) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:412) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:255) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:237) ~[?:?]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392) ~[?:?]
+	at java.net.Socket.connect(Socket.java:615) ~[?:?]
+	at java.net.Socket.connect(Socket.java:563) ~[?:?]
+	at java.net.Socket.<init>(Socket.java:459) ~[?:?]
+	at java.net.Socket.<init>(Socket.java:236) ~[?:?]
+	at client.Client.<init>(Client.java:40) ~[client.jar:?]
+	at client.ClientExecutor.main(ClientExecutor.java:10) ~[client.jar:?]
+13:00:08.411 [main] ERROR client.Client - Connection refused: connect
+java.net.ConnectException: Connection refused: connect
+	at java.net.PlainSocketImpl.connect0(Native Method) ~[?:?]
+	at java.net.PlainSocketImpl.socketConnect(PlainSocketImpl.java:101) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:412) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:255) ~[?:?]
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:237) ~[?:?]
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392) ~[?:?]
+	at java.net.Socket.connect(Socket.java:615) ~[?:?]
+	at java.net.Socket.connect(Socket.java:563) ~[?:?]
+	at java.net.Socket.<init>(Socket.java:459) ~[?:?]
+	at java.net.Socket.<init>(Socket.java:236) ~[?:?]
+	at client.Client.<init>(Client.java:40) ~[client.jar:?]
+	at client.ClientExecutor.main(ClientExecutor.java:10) ~[client.jar:?]

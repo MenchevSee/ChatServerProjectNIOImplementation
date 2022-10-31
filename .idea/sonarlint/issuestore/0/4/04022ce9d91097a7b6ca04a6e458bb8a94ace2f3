@@ -1,0 +1,15 @@
+
+i
+java:S1192®"FDefine a constant instead of duplicating this literal "File " 3 times.(—ŠÄûûÿÿÿÿ8©Í¸ÇÁ0
+z	java:S135h"YReduce the total number of break and continue statements in this loop to use at most one.(¤ÅÚÿÿÿÿÿ8©Í¸ÇÁ0
+F
+java:S1604"(Make this anonymous inner class a lambda(ÁÀ½É8©Í¸ÇÁ0
+Z	java:S106$"9Replace this use of System.out or System.err by a logger.(ÿ–üûúÿÿÿÿ8ãÍ¸ÇÁ0
+U	java:S106z"9Replace this use of System.out or System.err by a logger.(¨€ÀÏ8óÍ¸ÇÁ0
+[	java:S106ƒ"9Replace this use of System.out or System.err by a logger.(‡ìò‘øÿÿÿÿ8óÍ¸ÇÁ0
+[	java:S106®"9Replace this use of System.out or System.err by a logger.(—ŠÄûûÿÿÿÿ8óÍ¸ÇÁ0
+d
+java:S3457¯"AFormat specifiers should be used instead of string concatenation.(¤¨¯ıÿÿÿÿ8óÍ¸ÇÁ0
+V	java:S106Û"9Replace this use of System.out or System.err by a logger.(ôš¦·8óÍ¸ÇÁ0
+[	java:S106ò"9Replace this use of System.out or System.err by a logger.(éËö–øÿÿÿÿ8óÍ¸ÇÁ0
+[	java:S106ü"9Replace this use of System.out or System.err by a logger.(²»®öıÿÿÿÿ8óÍ¸ÇÁ0

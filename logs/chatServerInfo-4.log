@@ -1,0 +1,10 @@
+17:51:07.294 [pool-5-thread-2] INFO  server.service.Server - Server socket disconnected. No more clients will be accepted!. The server will be shutdown in 1 minute!
+17:54:32.548 [Thread-0] INFO  server.service.Server - Server started!
+17:54:43.608 [Thread-0] INFO  server.service.Server - A new client has connected!
+17:56:18.277 [Thread-0] INFO  server.service.Server - Server shutdown initiated!
+17:56:18.277 [pool-5-thread-2] INFO  server.service.Server - Server socket disconnected. No more clients will be accepted!. The server will be shutdown in 1 minute!
+17:56:18.277 [pool-5-thread-2] INFO  server.service.Server - Server socket disconnected. No more clients will be accepted!. The server will be shutdown in 1 minute!
+18:09:28.587 [Thread-0] INFO  server.service.Server - Server started!
+18:09:33.453 [Thread-0] INFO  server.service.Server - A new client has connected!
+18:09:35.710 [Thread-0] INFO  server.service.Server - Server shutdown initiated!
+18:09:35.709 [pool-5-thread-2] INFO  server.service.Server - Server socket disconnected. No more clients will be accepted!. The server will be shutdown in 1 minute!

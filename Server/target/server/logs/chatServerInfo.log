@@ -1,0 +1,8 @@
+12:50:55.164 [Thread-0] INFO  server.service.Server - Server started!
+13:00:01.837 [Thread-0] INFO  server.service.Server - Server started!
+13:01:49.762 [Thread-0] INFO  server.service.Server - Server started!
+13:07:37.434 [Thread-0] INFO  server.service.Server - Server started!
+13:07:41.800 [Thread-0] INFO  server.service.Server - A new client has connected!
+13:09:41.831 [pool-3-thread-1] INFO  server.service.Server - mencho left the group chat!
+13:09:41.838 [pool-3-thread-1] INFO  server.service.Server - mencho left the group chat!
+13:09:41.871 [pool-3-thread-1] INFO  server.service.Server - mencho left the group chat!

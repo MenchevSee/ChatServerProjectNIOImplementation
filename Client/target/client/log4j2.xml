@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration name="Client">
+    <Appenders>
+        <RollingFile name="ClientInfoLog" fileName="logs\clientInfo.log"
+                     filePattern="logs\clientInfo-%i.log">
+            <PatternLayout>
+                <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT"/>
+            </Filters>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1KB"/>
+            </Policies>
+            <DefaultRolloverStrategy min="1" max="10"/>
+        </RollingFile>
+        <RollingFile name="ClientErrorLog" fileName="logs\clientError.log"
+                     filePattern="logs\clientError-%i.log">
+            <PatternLayout>
+                <Pattern>%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT"/>
+            </Filters>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1KB"/>
+            </Policies>
+            <DefaultRolloverStrategy min="1" max="10"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="trace">
+            <AppenderRef ref="ClientInfoLog"/>
+            <AppenderRef ref="ClientErrorLog"/>
+        </Root>
+    </Loggers>
+</Configuration>
