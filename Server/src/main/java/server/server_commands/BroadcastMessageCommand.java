@@ -2,7 +2,6 @@ package server.server_commands;
 
 
 import server.service.SocketAcceptor;
-import server.service.SocketProcessor;
 
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -15,9 +14,9 @@ public class BroadcastMessageCommand extends Command
     private final boolean includeThisClient;
 
 
-    public BroadcastMessageCommand(String clientMessage, SocketChannel clientSocketChannel, boolean includeThisClient)
+    public BroadcastMessageCommand(String clientMessage, SelectionKey clientSelectionKey, boolean includeThisClient)
     {
-        super(clientSocketChannel);
+        super(clientSelectionKey);
         this.clientMessage = clientMessage;
         this.includeThisClient = includeThisClient;
     }
@@ -25,7 +24,8 @@ public class BroadcastMessageCommand extends Command
 
     @Override public void run()
     {
-        Set<SelectionKey> selectionKeys = SocketAcceptor.messageChannelsSelector.selectedKeys();
+        SocketChannel clientSocketChannel = (SocketChannel) clientSelectionKey.channel();
+        Set<SelectionKey> selectionKeys = SocketAcceptor.messageChannelsSelector.keys();
         if (!includeThisClient)
         {
             for (SelectionKey selectionKey : selectionKeys)
@@ -43,6 +43,11 @@ public class BroadcastMessageCommand extends Command
             {
                 writeToClient(clientMessage, (SocketChannel)selectionKey.channel());
             }
+        }
+
+        if (clientMessage.contains("has entered the chat!"))
+        {
+            writeToClient("welcome", clientSocketChannel);
         }
     }
 }

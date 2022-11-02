@@ -1,10 +1,13 @@
 package nio.client;
 
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 
@@ -22,7 +25,7 @@ public class Client implements Runnable
         try
         {
             this.socketChannel = SocketChannel.open();
-            this.socketChannel.connect(new InetSocketAddress("localhost",9999));
+            this.socketChannel.connect(new InetSocketAddress("localhost", 9999));
         }
         catch (IOException e)
         {
@@ -33,13 +36,18 @@ public class Client implements Runnable
         this.userName = scanner.nextLine();
         writeToServer(userName);
         this.readByteBuffer = ByteBuffer.allocate(1024);
+    }
+
+
+    @Override public void run()
+    {
         readFromServer();
     }
 
 
     private void sendMessage()
     {
-        new Thread(new Runnable()
+        Thread thread = new Thread(new Runnable()
         {
             @Override public void run()
             {
@@ -49,7 +57,8 @@ public class Client implements Runnable
                     {
                         while (System.in.available() != 0)
                         {
-                            writeToServer(scanner.nextLine());
+                                                        writeToServer(scanner.nextLine());
+//                            clientMessageHandling(scanner.nextLine());
                         }
                     }
                     catch (IOException e)
@@ -58,7 +67,26 @@ public class Client implements Runnable
                     }
                 }
             }
-        }).start();
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+
+    private void clientMessageHandling(String clientMessage)
+    {
+        String[] splitClientMessage = clientMessage.split(" ");
+        String command = splitClientMessage[0];
+        switch (command)
+        {
+            case "EXIT":
+                writeToServer(clientMessage);
+                closeEverything();
+                break;
+            default:
+                writeToServer(clientMessage);
+                break;
+        }
     }
 
 
@@ -66,7 +94,6 @@ public class Client implements Runnable
     {
         String amendedClientMessage = userName + ": " + clientMessage;
         writeByteBuffer = ByteBuffer.wrap(amendedClientMessage.getBytes());
-        writeByteBuffer.rewind();
         try
         {
             socketChannel.write(writeByteBuffer);
@@ -74,7 +101,6 @@ public class Client implements Runnable
             {
                 socketChannel.write(writeByteBuffer);
             }
-            writeByteBuffer.clear();
         }
         catch (IOException e)
         {
@@ -85,20 +111,18 @@ public class Client implements Runnable
 
     private void readFromServer()
     {
+        String serverMessage;
         while (socketChannel.isOpen())
         {
-            String serverMessage;
             try
             {
-                while (socketChannel.read(readByteBuffer) >= 0 || readByteBuffer.position() > 0)
-                {
-                    socketChannel.read(readByteBuffer);
-                }
-                serverMessage = readByteBuffer.toString();
+                socketChannel.read(readByteBuffer);
+                readByteBuffer.flip();
+                serverMessage = StandardCharsets.UTF_8.decode(readByteBuffer).toString();
+                readByteBuffer.clear();
                 if (!serverMessage.trim().isEmpty())
                 {
-                    messageHandling(serverMessage);
-                    readByteBuffer.clear();
+                    serverMessageHandling(serverMessage);
                 }
             }
             catch (IOException e)
@@ -109,12 +133,13 @@ public class Client implements Runnable
     }
 
 
-    private void messageHandling(String serverMessage)
+    private void serverMessageHandling(String serverMessage)
     {
         String[] splitServerMessage = serverMessage.split(" ");
         switch (splitServerMessage[0])
         {
             case "welcome":
+                System.out.println("You have entered the chat!");
                 sendMessage();
                 break;
             default:
@@ -124,8 +149,26 @@ public class Client implements Runnable
     }
 
 
-    @Override public void run()
+    private void closeEverything()
     {
-
+        try
+        {
+            if (socketChannel != null)
+            {
+                socketChannel.close();
+            }
+            if (scanner != null)
+            {
+                scanner.close();
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            IOUtils.closeQuietly(socketChannel, scanner);
+        }
     }
 }

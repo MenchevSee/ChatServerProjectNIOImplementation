@@ -61,7 +61,6 @@ public class SocketAcceptor implements Runnable
         {
             e.printStackTrace();
         }
-
         listenForIncomingConnections();
     }
 
@@ -86,14 +85,6 @@ public class SocketAcceptor implements Runnable
             {
                 SelectionKey key = keyIterator.next();
                 ServerSocketChannel channel = (ServerSocketChannel)key.channel();
-                try
-                {
-                    channel.configureBlocking(false);
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
                 if (channel.equals(messagesChannel))
                 {
                     if (licenseManagement.verify())
@@ -123,14 +114,10 @@ public class SocketAcceptor implements Runnable
                         break;
                     }
                 }
+                keyIterator.remove();
             }
-            keyIterator.remove();
         }
     }
 
 
-    public Selector getMessageChannelsSelector()
-    {
-        return messageChannelsSelector;
-    }
 }

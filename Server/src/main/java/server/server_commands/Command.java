@@ -3,24 +3,23 @@ package server.server_commands;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 public abstract class Command implements Runnable
 {
 
-    protected SocketChannel clientSocketChannel;
+    protected SelectionKey clientSelectionKey;
 
-
-    protected Command(SocketChannel clientSocketChannel)
+    protected Command(SelectionKey clientSelectionKey)
     {
-        this.clientSocketChannel = clientSocketChannel;
+        this.clientSelectionKey = clientSelectionKey;
     }
 
 
     protected void writeToClient(String clientMessage, SocketChannel clientMessageSocketChannel)
     {
         ByteBuffer byteBuffer = ByteBuffer.wrap(clientMessage.getBytes());
-        byteBuffer.rewind();
         try
         {
             clientMessageSocketChannel.write(byteBuffer);

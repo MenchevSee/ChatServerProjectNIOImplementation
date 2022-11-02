@@ -1,22 +1,23 @@
 package server.server_commands;
 
 
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 
 public class CommandFactory
 {
 //    TODO: restructure the class
-    public Command getInstance(String clientMessage, SocketChannel clientSocketChannel)
+    public Command getInstance(String clientMessage, SelectionKey clientSelectionKey)
     {
         Command command = null;
         String[] splitClientMessage = clientMessage.split(" ");
         String commandName = splitClientMessage[1];
         switch (commandName)
         {
-//            case "EXIT":
-//                command = new ExitCommand(clientHandler);
-//                break;
+            case "EXIT":
+                command = new ExitCommand(clientSelectionKey);
+                break;
 //            case "TIME":
 //                command = new TimeCommand(clientHandler);
 //                break;
@@ -36,9 +37,9 @@ public class CommandFactory
 //                command = new ListAllFilesCommand(clientHandler);
 //                break;
             default:
-                command = new BroadcastMessageCommand(clientMessage, clientSocketChannel, false);
+                command = new BroadcastMessageCommand(clientMessage, clientSelectionKey, false);
                 break;
         }
-        return null;
+        return command;
     }
 }
