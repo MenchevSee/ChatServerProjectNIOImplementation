@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
@@ -57,8 +58,7 @@ public class Client implements Runnable
                     {
                         while (System.in.available() != 0)
                         {
-                                                        writeToServer(scanner.nextLine());
-//                            clientMessageHandling(scanner.nextLine());
+                            clientMessageHandling(scanner.nextLine());
                         }
                     }
                     catch (IOException e)
@@ -124,6 +124,9 @@ public class Client implements Runnable
                 {
                     serverMessageHandling(serverMessage);
                 }
+            }
+            catch (AsynchronousCloseException e){
+//                connection cut from serve side!!!
             }
             catch (IOException e)
             {

@@ -72,7 +72,6 @@ public class SocketProcessor implements Runnable
                     if (selectionKey.attachment() == null)
                     {
                         selectionKey.attach(clientMessage.split(" ")[1]);
-                        selectionKey.cancel();
                         Command command = commandFactory.getInstance(
                                         "SERVER: " + clientMessage.split(" ")[1] + " has entered the chat!",
                                         selectionKey);
@@ -86,6 +85,10 @@ public class SocketProcessor implements Runnable
                 }
                 catch (IOException e)
                 {
+                    if (e.getMessage().contains("An existing connection was forcibly closed by the remote host")){
+                        SocketProcessor.closeClientConnection(selectionKey);
+                        continue;
+                    }
                     e.printStackTrace();
                 }
                 keyIterator.remove();

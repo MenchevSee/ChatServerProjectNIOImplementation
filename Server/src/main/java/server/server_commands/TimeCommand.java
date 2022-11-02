@@ -1,20 +1,22 @@
-//package server.server_commands;
-//
-//
-//import server.handlers.ClientHandler;
-//import java.util.Date;
-//
-//
-//public class TimeCommand extends Command
-//{
-//    public TimeCommand(ClientHandler clientHandler)
-//    {
-//        super(clientHandler);
-//    }
-//
-//
-//    @Override public void run()
-//    {
-//        clientHandler.writeToClient(new Date().toString());
-//    }
-//}
+package server.server_commands;
+
+
+
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
+import java.util.Date;
+
+
+public class TimeCommand extends Command
+{
+    public TimeCommand(SelectionKey clientSelectionKey)
+    {
+        super(clientSelectionKey);
+    }
+
+
+    @Override public void run()
+    {
+        writeToClient(new Date().toString(), (SocketChannel) clientSelectionKey.channel());
+    }
+}

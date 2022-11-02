@@ -19,8 +19,6 @@ Y
 )Client/target/client/logs/clientError.log,9\2\92c8f8dde4744d17019627b7bc184b8848348904
 [
 +Client/target/client/logs/clientError-1.log,f\3\f301f17d08041a5f85170d2fd756628a17cd419d
-q
-AServer/src/main/java/server/server_commands/AdminKillCommand.java,7\4\74d9dc1b2f1eb606489432499bfe42a17d22b7c3
 r
 BServer/src/main/java/server/server_commands/AdminDrainCommand.java,6\c\6c21d27fced7ab1161a841edf382af151e995165
 t
@@ -29,8 +27,6 @@ o
 ?Server/src/main/java/server/server_commands/FileGetCommand.java,f\3\f335860b6dbe53cf9a957b144bdd370fcb934bca
 l
 <Server/src/main/java/server/server_commands/SendCommand.java,9\d\9d538e3928c90fd60911c9235326b86573cce7d8
-l
-<Server/src/main/java/server/server_commands/TimeCommand.java,4\e\4ef07acc030eba1601533b22db3bb4e554352c1f
 j
 :Server/src/main/java/server/file_cache/FilesCacheRepo.java,6\3\63e4ad4e7918f3e7f2273e908b2bdc08665cf643
 k

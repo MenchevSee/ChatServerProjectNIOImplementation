@@ -18,9 +18,9 @@ public class CommandFactory
             case "EXIT":
                 command = new ExitCommand(clientSelectionKey);
                 break;
-//            case "TIME":
-//                command = new TimeCommand(clientHandler);
-//                break;
+            case "TIME":
+                command = new TimeCommand(clientSelectionKey);
+                break;
 //            case "SEND":
 //                command = new SendCommand(clientHandler, splitClientMessage[2], splitClientMessage[3]);
 //                break;
@@ -30,9 +30,9 @@ public class CommandFactory
 //            case "ADMIN:DRAIN":
 //                command = new AdminDrainCommand(clientHandler);
 //                break;
-//            case "ADMIN:KILL":
-//                command = new AdminKillCommand(clientHandler, splitClientMessage[2]);
-//                break;
+            case "ADMIN:KILL":
+                command = new AdminKillCommand(clientSelectionKey);
+                break;
 //            case "LIST-FILES":
 //                command = new ListAllFilesCommand(clientHandler);
 //                break;
