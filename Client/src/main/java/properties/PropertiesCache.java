@@ -27,7 +27,7 @@ public class PropertiesCache extends Properties
             try
             {
                 propertiesCache.load(new BufferedInputStream(
-                                new FileInputStream(".\\clientConfig.properties")));
+                                new FileInputStream("C:\\DEV\\workspace\\ChatServerProjectNIOImplementation\\Client\\src\\main\\resources\\clientConfig.properties")));
             }
             catch (IOException e)
             {

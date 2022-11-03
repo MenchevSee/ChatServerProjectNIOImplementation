@@ -1,51 +1,40 @@
-//package server.server_commands;
-//
-//
-//import server.handlers.ClientHandler;
-//import server.service.Server;
-//
-//
-//public class SendCommand extends Command
-//{
-//    private final String fileName;
-//    private final String fileLength;
-//
-//
-//    public SendCommand(ClientHandler clientHandler, String fileName, String fileLength)
-//    {
-//        super(clientHandler);
-//        this.fileName = fileName;
-//        this.fileLength = fileLength;
-//    }
-//
-//
-//    @Override public void run()
-//    {
-//        if (!Server.drainOfServerInitiated.get())
-//        {
-//            Server.fileTransferPool.execute(new Runnable()
-//            {
-//                @Override public void run()
-//                {
-//                    Server.LOGGER.info("Receiving file " + fileName);
-//                    if (filesCache.addFile(fileName, fileBufferedInputStream, fileLength))
-//                    {
-//                        clientHandler.writeToClient("File uploaded successfully!");
-//                        Command command = commandFactory.getInstance(
-//                                        "SERVER: " + clientUserName + " uploaded " + fileName + " to the server!");
-//                        commandExecutor.execute(command);
-//                        Server.LOGGER.info(clientHandler.getClientUserName() + " uploaded " + fileName + " to the server!");
-//                    }
-//                    else
-//                    {
-//                        clientHandler.writeToClient("The server was unable to upload the file successfully!");
-//                    }
-//                }
-//            });
-//        }
-//        else
-//        {
-//            clientHandler.writeToClient("Server drain has been initiated. No more files can be send to the server!");
-//        }
-//    }
-//}
+package server.server_commands;
+
+
+import server.client.Client;
+import server.service.Server;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
+
+
+public class SendCommand extends Command
+{
+    private final String fileName;
+    private final int fileLength;
+    private SocketChannel fileSocketChannel;
+
+
+    public SendCommand(SelectionKey clientSelectionKey, String fileName, String fileLength)
+    {
+        super(clientSelectionKey);
+        this.fileName = fileName;
+        this.fileLength = Integer.parseInt(fileLength);
+    }
+
+
+    @Override public void run()
+    {
+        fileSocketChannel = Client.clients.get(clientSelectionKey.attachment()).getFilesChannel();
+        if (filesCache.addFile(fileName, fileSocketChannel, fileLength))
+        {
+            writeToClient("File uploaded successfully!", (SocketChannel)clientSelectionKey.channel());
+        }
+        else
+        {
+            writeToClient("The server was unable to upload the file successfully!", (SocketChannel)clientSelectionKey.channel());
+        }
+    }
+}

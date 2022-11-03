@@ -1,6 +1,11 @@
 package server.service;
 
 
+import server.properties.PropertiesCache;
+
+import java.util.Properties;
+
+
 public class Server
 {
     private SocketAcceptor socketAcceptor;
@@ -8,7 +13,7 @@ public class Server
     private int tcpMessagesPort;
     private int tcpFilesPort;
     private int licenseCount;
-
+    public static final Properties properties = PropertiesCache.getPropertiesCache();
 
     public Server(int tcpMessagesPort, int tcpFilesPort, int licenseCount)
     {

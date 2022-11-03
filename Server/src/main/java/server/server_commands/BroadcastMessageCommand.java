@@ -1,11 +1,9 @@
 package server.server_commands;
 
 
-import server.service.SocketAcceptor;
 
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.util.Set;
 
 
 public class BroadcastMessageCommand extends Command
@@ -24,8 +22,7 @@ public class BroadcastMessageCommand extends Command
 
     @Override public void run()
     {
-        SocketChannel clientSocketChannel = (SocketChannel) clientSelectionKey.channel();
-        Set<SelectionKey> selectionKeys = SocketAcceptor.messageChannelsSelector.keys();
+        SocketChannel clientSocketChannel = (SocketChannel)clientSelectionKey.channel();
         if (!includeThisClient)
         {
             for (SelectionKey selectionKey : selectionKeys)

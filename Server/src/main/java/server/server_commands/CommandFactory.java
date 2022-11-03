@@ -21,17 +21,17 @@ public class CommandFactory
             case "TIME":
                 command = new TimeCommand(clientSelectionKey);
                 break;
-//            case "SEND":
-//                command = new SendCommand(clientHandler, splitClientMessage[2], splitClientMessage[3]);
-//                break;
-//            case "FILE-GET":
-//                command = new FileGetCommand(clientHandler, splitClientMessage[2]);
-//                break;
+            case "SEND":
+                command = new SendCommand(clientSelectionKey, splitClientMessage[2], splitClientMessage[3]);
+                break;
+            case "FILE-GET":
+                command = new FileGetCommand(clientSelectionKey, splitClientMessage[2]);
+                break;
 //            case "ADMIN:DRAIN":
 //                command = new AdminDrainCommand(clientHandler);
 //                break;
             case "ADMIN:KILL":
-                command = new AdminKillCommand(clientSelectionKey);
+                command = new AdminKillCommand(clientSelectionKey, splitClientMessage[2]);
                 break;
 //            case "LIST-FILES":
 //                command = new ListAllFilesCommand(clientHandler);

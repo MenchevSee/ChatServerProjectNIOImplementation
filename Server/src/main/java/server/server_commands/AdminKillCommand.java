@@ -1,26 +1,32 @@
 package server.server_commands;
 
 
-import server.handlers.ClientHandler;
+import server.service.SocketProcessor;
 
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 
 
 public class AdminKillCommand extends Command
 {
-    public AdminKillCommand(SelectionKey clientSelectionKey)
+    private final String clientUserName;
+
+
+    public AdminKillCommand(SelectionKey clientSelectionKey, String clientUserName)
     {
         super(clientSelectionKey);
+        this.clientUserName = clientUserName;
     }
+
 
     @Override public void run()
     {
-        for (ClientHandler clientHandler : ClientHandler.clientHandlerList)
+        for (SelectionKey selectionKey : selectionKeys)
         {
-            if (clientHandler.getClientUserName().equals(clientUserName))
+            if (selectionKey.attachment().equals(clientUserName))
             {
-                clientHandler.writeToClient("You have been removed by the admin!");
-                clientHandler.closeEverything();
+                writeToClient("You have been kicked from the admin! ", (SocketChannel)selectionKey.channel());
+                SocketProcessor.closeClientConnection(selectionKey);
             }
         }
     }

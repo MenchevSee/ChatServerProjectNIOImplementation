@@ -17,7 +17,7 @@ public class SocketAcceptor implements Runnable
     private final int tcpMessagesPort;
     private final int tcpFilesPort;
     public static Selector messageChannelsSelector;
-    private Selector fileChannelsSelector;
+    public static Selector fileChannelsSelector;
     private Selector acceptSocketChannelsSelector;
     private ServerSocketChannel messagesChannel;
     private ServerSocketChannel filesChannel;
@@ -27,6 +27,7 @@ public class SocketAcceptor implements Runnable
         try
         {
             messageChannelsSelector = Selector.open();
+            fileChannelsSelector = Selector.open();
         }
         catch (IOException e)
         {
@@ -52,7 +53,6 @@ public class SocketAcceptor implements Runnable
             filesChannel = ServerSocketChannel.open();
             filesChannel.socket().bind(new InetSocketAddress("localhost", tcpFilesPort));
             filesChannel.configureBlocking(false);
-            fileChannelsSelector = Selector.open();
             acceptSocketChannelsSelector = Selector.open();
             messagesChannel.register(acceptSocketChannelsSelector, SelectionKey.OP_ACCEPT);
             filesChannel.register(acceptSocketChannelsSelector, SelectionKey.OP_ACCEPT);
@@ -91,9 +91,9 @@ public class SocketAcceptor implements Runnable
                     {
                         try
                         {
-                            SocketChannel client = channel.accept();
-                            client.configureBlocking(false);
-                            client.register(messageChannelsSelector, SelectionKey.OP_READ);
+                            SocketChannel clientMessageChannel = channel.accept();
+                            clientMessageChannel.configureBlocking(false);
+                            clientMessageChannel.register(messageChannelsSelector, SelectionKey.OP_READ);
                         }
                         catch (IOException e)
                         {
@@ -106,7 +106,9 @@ public class SocketAcceptor implements Runnable
                 {
                     try
                     {
-                        channel.accept().register(fileChannelsSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                        SocketChannel clientFileChannel = channel.accept();
+                        clientFileChannel.configureBlocking(false);
+                        clientFileChannel.register(fileChannelsSelector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                     }
                     catch (IOException e)
                     {
@@ -118,6 +120,4 @@ public class SocketAcceptor implements Runnable
             }
         }
     }
-
-
 }

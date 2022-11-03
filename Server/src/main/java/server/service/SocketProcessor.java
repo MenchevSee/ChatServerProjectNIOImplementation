@@ -1,7 +1,7 @@
 package server.service;
 
 
-import org.apache.commons.io.IOUtils;
+import server.client.Client;
 import server.server_commands.Command;
 import server.server_commands.CommandFactory;
 
@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -19,7 +18,7 @@ import java.util.concurrent.Executors;
 
 public class SocketProcessor implements Runnable
 {
-    public static ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
+    private static ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
     private CommandFactory commandFactory;
 
 
@@ -31,13 +30,14 @@ public class SocketProcessor implements Runnable
 
     @Override public void run()
     {
+        handleTransferOfFiles();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
         while (SocketAcceptor.messageChannelsSelector.isOpen())
         {
             try
             {
                 //                int sth = SocketAcceptor.messageChannelsSelector.select();
-                int selectionKeyCount = SocketAcceptor.messageChannelsSelector.selectNow();
-                if (selectionKeyCount == 0)
+                if (SocketAcceptor.messageChannelsSelector.selectNow() == 0)
                 {
                     continue;
                 }
@@ -47,10 +47,7 @@ public class SocketProcessor implements Runnable
                 e.printStackTrace();
             }
             Set<SelectionKey> selectedKeys = SocketAcceptor.messageChannelsSelector.selectedKeys();
-            ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
-
             Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
-
             while (keyIterator.hasNext())
             {
                 //            TODO: pass the code below to another thread???
@@ -58,10 +55,9 @@ public class SocketProcessor implements Runnable
                 SocketChannel messageSocketChannel = (SocketChannel)selectionKey.channel();
                 try
                 {
-                    int bytesRead = messageSocketChannel.read(byteBuffer);
-                    while (bytesRead > 0)
+                    while (messageSocketChannel.read(byteBuffer) > 0)
                     {
-                        bytesRead = messageSocketChannel.read(byteBuffer);
+                        messageSocketChannel.read(byteBuffer);
                     }
                     byteBuffer.flip();
                     String clientMessage = StandardCharsets.UTF_8.decode(byteBuffer).toString();
@@ -71,11 +67,22 @@ public class SocketProcessor implements Runnable
                     //                in case this is the first input from the client - a.k.a. its username
                     if (selectionKey.attachment() == null)
                     {
-                        selectionKey.attach(clientMessage.split(" ")[1]);
-                        Command command = commandFactory.getInstance(
-                                        "SERVER: " + clientMessage.split(" ")[1] + " has entered the chat!",
-                                        selectionKey);
-                        commandExecutor.execute(command);
+                        String userName = clientMessage.split(" ")[1];
+                        if (!Client.clients.containsKey(userName))
+                        {
+                            selectionKey.attach(userName);
+                            Client client = new Client(userName);
+                            client.setMessagesChannel((SocketChannel)selectionKey.channel());
+                            Command command = commandFactory.getInstance(
+                                            "SERVER: " + userName + " has entered the chat!",
+                                            selectionKey);
+                            commandExecutor.execute(command);
+                        }
+                        else
+                        {
+                            //                        TODO: in  case the client name already exists
+                            closeClientConnection(selectionKey);
+                        }
                     }
                     else
                     {
@@ -85,7 +92,8 @@ public class SocketProcessor implements Runnable
                 }
                 catch (IOException e)
                 {
-                    if (e.getMessage().contains("An existing connection was forcibly closed by the remote host")){
+                    if (e.getMessage().contains("An existing connection was forcibly closed by the remote host"))
+                    {
                         SocketProcessor.closeClientConnection(selectionKey);
                         continue;
                     }
@@ -97,17 +105,68 @@ public class SocketProcessor implements Runnable
     }
 
 
+    private void handleTransferOfFiles()
+    {
+        Thread thread = new Thread(new Runnable()
+        {
+            @Override public void run()
+            {
+                ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+                while (SocketAcceptor.fileChannelsSelector.isOpen())
+                {
+                    try
+                    {
+                        if (SocketAcceptor.fileChannelsSelector.selectNow() == 0)
+                        {
+                            continue;
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    Set<SelectionKey> selectionKeys = SocketAcceptor.fileChannelsSelector.selectedKeys();
+                    Iterator<SelectionKey> keyIterator = selectionKeys.iterator();
+                    while (keyIterator.hasNext())
+                    {
+                        SelectionKey selectionKey = keyIterator.next();
+                        SocketChannel socketChannel = (SocketChannel)selectionKey.channel();
+                        if (selectionKey.isReadable())
+                        {
+                            if (selectionKey.attachment() == null)
+                            {
+                                try
+                                {
+                                    while (socketChannel.read(byteBuffer) > 0)
+                                    {
+                                        socketChannel.read(byteBuffer);
+                                    }
+                                    byteBuffer.flip();
+                                    String clientName = StandardCharsets.UTF_8.decode(byteBuffer).toString();
+                                    byteBuffer.clear();
+                                    Client client = Client.clients.get(clientName);
+                                    client.setFilesChannel((SocketChannel)selectionKey.channel());
+                                    selectionKey.cancel();
+                                }
+                                catch (IOException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+
     public static void closeClientConnection(SelectionKey clientSelectionKey)
     {
+        Client.clients.get(clientSelectionKey.attachment()).closeClientConnection();
         clientSelectionKey.cancel();
-        try
-        {
-            System.out.println("closing client connection!");
-            clientSelectionKey.channel().close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        System.out.println("closing client connection!");
     }
 }
