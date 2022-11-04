@@ -17,10 +17,12 @@ public abstract class Command implements Runnable
     protected SelectionKey clientSelectionKey;
     protected Set<SelectionKey> selectionKeys;
     protected FilesCacheRepo filesCache;
+    private boolean isFileTransfer;
 
-    protected Command(SelectionKey clientSelectionKey)
+    protected Command(SelectionKey clientSelectionKey, boolean threadPoolFlag)
     {
         this.clientSelectionKey = clientSelectionKey;
+        this.isFileTransfer = threadPoolFlag;
         this.selectionKeys = SocketAcceptor.messageChannelsSelector.keys();
         this.filesCache = FilesCacheRepo.getFilesCache();
     }
@@ -41,5 +43,11 @@ public abstract class Command implements Runnable
         {
             e.printStackTrace();
         }
+    }
+
+
+    public boolean getIsFileTransfer()
+    {
+        return isFileTransfer;
     }
 }

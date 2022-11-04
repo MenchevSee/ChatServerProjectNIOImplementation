@@ -16,28 +16,28 @@ public class CommandFactory
         switch (commandName)
         {
             case "EXIT":
-                command = new ExitCommand(clientSelectionKey);
+                command = new ExitCommand(clientSelectionKey, false);
                 break;
             case "TIME":
-                command = new TimeCommand(clientSelectionKey);
+                command = new TimeCommand(clientSelectionKey, false);
                 break;
             case "SEND":
-                command = new SendCommand(clientSelectionKey, splitClientMessage[2], splitClientMessage[3]);
+                command = new SendCommand(clientSelectionKey, true, splitClientMessage[2], splitClientMessage[3]);
                 break;
             case "FILE-GET":
-                command = new FileGetCommand(clientSelectionKey, splitClientMessage[2]);
+                command = new FileGetCommand(clientSelectionKey, true, splitClientMessage[2]);
                 break;
-//            case "ADMIN:DRAIN":
-//                command = new AdminDrainCommand(clientHandler);
-//                break;
+            case "ADMIN:DRAIN":
+                command = new AdminDrainCommand(clientSelectionKey, false);
+                break;
             case "ADMIN:KILL":
-                command = new AdminKillCommand(clientSelectionKey, splitClientMessage[2]);
+                command = new AdminKillCommand(clientSelectionKey, false, splitClientMessage[2]);
                 break;
-//            case "LIST-FILES":
-//                command = new ListAllFilesCommand(clientHandler);
-//                break;
+            case "LIST-FILES":
+                command = new ListAllFilesCommand(clientSelectionKey, false);
+                break;
             default:
-                command = new BroadcastMessageCommand(clientMessage, clientSelectionKey, false);
+                command = new BroadcastMessageCommand(clientMessage, clientSelectionKey, false, false);
                 break;
         }
         return command;

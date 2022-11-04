@@ -12,9 +12,9 @@ public class AdminKillCommand extends Command
     private final String clientUserName;
 
 
-    public AdminKillCommand(SelectionKey clientSelectionKey, String clientUserName)
+    public AdminKillCommand(SelectionKey clientSelectionKey, boolean isFileTransfer, String clientUserName)
     {
-        super(clientSelectionKey);
+        super(clientSelectionKey,isFileTransfer);
         this.clientUserName = clientUserName;
     }
 

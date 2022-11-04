@@ -9,9 +9,9 @@ import java.util.Date;
 
 public class TimeCommand extends Command
 {
-    public TimeCommand(SelectionKey clientSelectionKey)
+    public TimeCommand(SelectionKey clientSelectionKey, boolean isFileTransfer)
     {
-        super(clientSelectionKey);
+        super(clientSelectionKey, isFileTransfer);
     }
 
 

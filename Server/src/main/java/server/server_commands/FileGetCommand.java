@@ -15,9 +15,9 @@ public class FileGetCommand extends Command
     private final String fileName;
 
 
-    public FileGetCommand(SelectionKey clientSelectionKey, String fileName)
+    public FileGetCommand(SelectionKey clientSelectionKey, boolean isFileTransfer, String fileName)
     {
-        super(clientSelectionKey);
+        super(clientSelectionKey, isFileTransfer);
         this.fileName = fileName;
     }
 

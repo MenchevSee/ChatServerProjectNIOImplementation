@@ -13,8 +13,6 @@ Y
 )Client/target/client/logs/clientError.log,9\2\92c8f8dde4744d17019627b7bc184b8848348904
 [
 +Client/target/client/logs/clientError-1.log,f\3\f301f17d08041a5f85170d2fd756628a17cd419d
-t
-DServer/src/main/java/server/server_commands/ListAllFilesCommand.java,f\2\f238cc50a20074d23b5d25cc7af0249f0d1f6496
 j
 :Server/src/main/java/server/license/LicenseManagement.java,e\a\ea39b57eec413f0a3ca2be25e5e22a8ce3503b9f
 g

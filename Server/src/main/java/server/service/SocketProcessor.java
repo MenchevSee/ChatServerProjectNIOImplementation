@@ -20,6 +20,7 @@ public class SocketProcessor implements Runnable
 {
     private static ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
     private CommandFactory commandFactory;
+    public static final ExecutorService fileTransferPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 3);
 
 
     public SocketProcessor()
@@ -76,7 +77,14 @@ public class SocketProcessor implements Runnable
                             Command command = commandFactory.getInstance(
                                             "SERVER: " + userName + " has entered the chat!",
                                             selectionKey);
-                            commandExecutor.execute(command);
+                            if (command.getIsFileTransfer())
+                            {
+                                fileTransferPool.execute(command);
+                            }
+                            else
+                            {
+                                commandExecutor.execute(command);
+                            }
                         }
                         else
                         {

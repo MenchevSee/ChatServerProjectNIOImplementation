@@ -9,9 +9,9 @@ import java.nio.channels.SelectionKey;
 
 public class ExitCommand extends Command
 {
-    public ExitCommand(SelectionKey clientSelectionKey)
+    public ExitCommand(SelectionKey clientSelectionKey, boolean isFileTransfer)
     {
-        super(clientSelectionKey);
+        super(clientSelectionKey, isFileTransfer);
     }
 
 

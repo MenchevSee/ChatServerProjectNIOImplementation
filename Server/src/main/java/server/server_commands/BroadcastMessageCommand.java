@@ -12,9 +12,9 @@ public class BroadcastMessageCommand extends Command
     private final boolean includeThisClient;
 
 
-    public BroadcastMessageCommand(String clientMessage, SelectionKey clientSelectionKey, boolean includeThisClient)
+    public BroadcastMessageCommand(String clientMessage, SelectionKey clientSelectionKey, boolean threadPoolFlag, boolean includeThisClient)
     {
-        super(clientSelectionKey);
+        super(clientSelectionKey, threadPoolFlag);
         this.clientMessage = clientMessage;
         this.includeThisClient = includeThisClient;
     }

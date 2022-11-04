@@ -2,10 +2,6 @@ package server.server_commands;
 
 
 import server.client.Client;
-import server.service.Server;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
@@ -17,9 +13,9 @@ public class SendCommand extends Command
     private SocketChannel fileSocketChannel;
 
 
-    public SendCommand(SelectionKey clientSelectionKey, String fileName, String fileLength)
+    public SendCommand(SelectionKey clientSelectionKey, boolean isFileTransfer, String fileName, String fileLength)
     {
-        super(clientSelectionKey);
+        super(clientSelectionKey, isFileTransfer);
         this.fileName = fileName;
         this.fileLength = Integer.parseInt(fileLength);
     }
