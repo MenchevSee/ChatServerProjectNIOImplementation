@@ -26,11 +26,11 @@ public class SendCommand extends Command
         fileSocketChannel = Client.clients.get(clientSelectionKey.attachment()).getFilesChannel();
         if (filesCache.addFile(fileName, fileSocketChannel, fileLength))
         {
-            writeToClient("File uploaded successfully!", (SocketChannel)clientSelectionKey.channel());
+            writeToClient("File uploaded successfully!", clientSocketChannel);
         }
         else
         {
-            writeToClient("The server was unable to upload the file successfully!", (SocketChannel)clientSelectionKey.channel());
+            writeToClient("The server was unable to upload the file successfully!", clientSocketChannel);
         }
     }
 }

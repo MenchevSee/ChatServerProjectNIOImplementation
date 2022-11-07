@@ -25,7 +25,7 @@ public class AdminKillCommand extends Command
         {
             if (selectionKey.attachment().equals(clientUserName))
             {
-                writeToClient("You have been kicked from the admin! ", (SocketChannel)selectionKey.channel());
+                writeToClient("You have been kicked from the admin! ", (SocketChannel) selectionKey.channel());
                 SocketProcessor.closeClientConnection(selectionKey);
             }
         }

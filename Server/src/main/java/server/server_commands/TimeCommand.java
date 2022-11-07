@@ -17,6 +17,6 @@ public class TimeCommand extends Command
 
     @Override public void run()
     {
-        writeToClient(new Date().toString(), (SocketChannel) clientSelectionKey.channel());
+        writeToClient(new Date().toString(), clientSocketChannel);
     }
 }

@@ -18,15 +18,17 @@ public abstract class Command implements Runnable
     protected Set<SelectionKey> selectionKeys;
     protected FilesCacheRepo filesCache;
     private boolean isFileTransfer;
+    protected SocketChannel clientSocketChannel;
+
 
     protected Command(SelectionKey clientSelectionKey, boolean threadPoolFlag)
     {
         this.clientSelectionKey = clientSelectionKey;
+        this.clientSocketChannel = (SocketChannel)clientSelectionKey.channel();
         this.isFileTransfer = threadPoolFlag;
         this.selectionKeys = SocketAcceptor.messageChannelsSelector.keys();
         this.filesCache = FilesCacheRepo.getFilesCache();
     }
-
 
     protected void writeToClient(String clientMessage, SocketChannel clientMessageSocketChannel)
     {

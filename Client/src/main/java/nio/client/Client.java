@@ -37,9 +37,7 @@ public class Client implements Runnable
         {
             this.messagesSocketChannel = SocketChannel.open();
             this.messagesSocketChannel.connect(new InetSocketAddress("localhost", 9999));
-            this.filesSocketChannel = SocketChannel.open();
-            this.filesSocketChannel.connect(new InetSocketAddress("localhost", 9998));
-            this.filesSocketChannel.configureBlocking(false);
+
         }
         catch (IOException e)
         {
@@ -57,6 +55,27 @@ public class Client implements Runnable
     @Override public void run()
     {
         readFromServer();
+    }
+
+
+    private void openFileSocketChannelConnection()
+    {
+        try
+        {
+            this.filesSocketChannel = SocketChannel.open();
+            this.filesSocketChannel.connect(new InetSocketAddress("localhost", 9998));
+            this.filesSocketChannel.configureBlocking(false);
+            while (!filesSocketChannel.finishConnect())
+            {
+                Thread.sleep(1000);
+            }
+            filesSocketChannel.write(ByteBuffer.wrap(userName.getBytes()));
+        }
+        catch (IOException | InterruptedException e)
+        {
+            e.printStackTrace();
+            closeEverything();
+        }
     }
 
 
@@ -111,6 +130,10 @@ public class Client implements Runnable
 
     private void sendFileToServer(File file)
     {
+        if (!filesSocketChannel.isOpen())
+        {
+            openFileSocketChannelConnection();
+        }
         filesTransferPool.execute(() ->
                                   {
                                       ByteBuffer readFileByteBuffer = ByteBuffer.allocate(4096);
@@ -193,15 +216,6 @@ public class Client implements Runnable
         {
             case "welcome":
                 System.out.println("You have entered the chat!");
-                try
-                {
-                    filesSocketChannel.finishConnect();
-                    filesSocketChannel.write(ByteBuffer.wrap(userName.getBytes()));
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
                 sendMessage();
                 break;
             case "SENDING":
@@ -216,6 +230,10 @@ public class Client implements Runnable
 
     private void receiveFileFromServer(String fileName, String fileLength)
     {
+        if (!filesSocketChannel.isOpen())
+        {
+            openFileSocketChannelConnection();
+        }
         filesTransferPool.execute(new Runnable()
         {
             @Override public void run()
@@ -261,10 +279,15 @@ public class Client implements Runnable
             {
                 messagesSocketChannel.close();
             }
+            if (filesSocketChannel != null)
+            {
+                filesSocketChannel.close();
+            }
             if (scanner != null)
             {
                 scanner.close();
             }
+
         }
         catch (IOException e)
         {
@@ -272,7 +295,11 @@ public class Client implements Runnable
         }
         finally
         {
-            IOUtils.closeQuietly(messagesSocketChannel, scanner);
+            IOUtils.closeQuietly(messagesSocketChannel, filesSocketChannel, scanner);
+            if (filesTransferPool != null)
+            {
+                filesTransferPool.shutdown();
+            }
         }
     }
 }

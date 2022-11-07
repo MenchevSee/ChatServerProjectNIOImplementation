@@ -15,12 +15,8 @@ Y
 +Client/target/client/logs/clientError-1.log,f\3\f301f17d08041a5f85170d2fd756628a17cd419d
 j
 :Server/src/main/java/server/license/LicenseManagement.java,e\a\ea39b57eec413f0a3ca2be25e5e22a8ce3503b9f
-g
-7Server/src/main/java/server/license/LicenseManager.java,9\8\98f14bfb25a185d57e2fdd5525b38e26a1675e41
 a
 1Server/src/main/java/server/handlers/Handler.java,f\5\f5acf5c0b27c9d3c525850be99cf5df7daf654b3
-e
-5Server/src/main/java/server/handlers/WaitHandler.java,2\5\2585b7180a62f3b601be2e6aeefacf0ae53b15a6
 _
 /Client/src/main/java/client/ClientExecutor.java,b\1\b1b2905aacfae69cd65c42091ce57fa1266728e2
 >
@@ -29,3 +25,7 @@ _
 Client/pom.xml,0\a\0a4c3742bc724bd9658ec7c94f6f621e2586d444
 7
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
+l
+<Server/src/main/java/server/server_commands/ExitCommand.java,b\9\b931b1cd6e0fe2ffed7bfbd5fb9e762c51028798
+^
+.Server/src/main/java/server/client/Client.java,5\9\59af3e6472989a7d28789ded2e5a6ee00b4a2443

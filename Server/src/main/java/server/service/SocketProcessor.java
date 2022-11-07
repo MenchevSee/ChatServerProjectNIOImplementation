@@ -18,14 +18,14 @@ import java.util.concurrent.Executors;
 
 public class SocketProcessor implements Runnable
 {
-    private static ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
+    public static ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
     private CommandFactory commandFactory;
     public static final ExecutorService fileTransferPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 3);
 
 
-    public SocketProcessor()
+    public SocketProcessor(Server server)
     {
-        this.commandFactory = new CommandFactory();
+        this.commandFactory = new CommandFactory(server);
     }
 
 
@@ -76,7 +76,7 @@ public class SocketProcessor implements Runnable
                             client.setMessagesChannel((SocketChannel)selectionKey.channel());
                             Command command = commandFactory.getInstance(
                                             "SERVER: " + userName + " has entered the chat!",
-                                            selectionKey);
+                                            selectionKey, "excludeThisClient");
                             if (command.getIsFileTransfer())
                             {
                                 fileTransferPool.execute(command);
@@ -94,7 +94,7 @@ public class SocketProcessor implements Runnable
                     }
                     else
                     {
-                        Command command = commandFactory.getInstance(clientMessage, selectionKey);
+                        Command command = commandFactory.getInstance(clientMessage, selectionKey,"excludeThisClient");
                         commandExecutor.execute(command);
                     }
                 }
@@ -176,5 +176,11 @@ public class SocketProcessor implements Runnable
         Client.clients.get(clientSelectionKey.attachment()).closeClientConnection();
         clientSelectionKey.cancel();
         System.out.println("closing client connection!");
+    }
+
+
+    public CommandFactory getCommandFactory()
+    {
+        return commandFactory;
     }
 }

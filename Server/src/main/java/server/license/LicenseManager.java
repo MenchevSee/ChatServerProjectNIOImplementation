@@ -15,7 +15,7 @@ public class LicenseManager implements LicenseManagement
     }
 
 
-    @Override public boolean verify()
+    @Override public synchronized boolean verify()
     {
         return SocketAcceptor.messageChannelsSelector.keys().size() < licenseQuantity;
     }

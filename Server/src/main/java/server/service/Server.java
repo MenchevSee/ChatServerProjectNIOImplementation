@@ -35,8 +35,8 @@ public class Server
 
     public void start()
     {
-        socketAcceptor = new SocketAcceptor(tcpMessagesPort, tcpFilesPort, licenseCount, this);
-        socketProcessor = new SocketProcessor();
+        socketAcceptor = new SocketAcceptor(this ,tcpMessagesPort, tcpFilesPort, licenseCount);
+        socketProcessor = new SocketProcessor(this);
 
         Thread acceptorThread = new Thread(socketAcceptor);
         Thread processorThread = new Thread(socketProcessor);
@@ -60,20 +60,12 @@ public class Server
                 }
             }
             Thread.sleep(60000);
-            if (SocketAcceptor.messageChannelsSelector != null)
-            {
-                SocketAcceptor.messageChannelsSelector.close();
-            }
         }
-        catch (IOException | InterruptedException e)
+        catch (InterruptedException e)
         {
             e.printStackTrace();
         }
-        finally
-        {
-            IOUtils.closeQuietly(SocketAcceptor.messageChannelsSelector);
-        }
-
+        SocketProcessor.commandExecutor.shutdownNow();
         Set<SelectionKey> messagesSelectionKeys = SocketAcceptor.messageChannelsSelector.keys();
         Iterator<SelectionKey> keyIterator = messagesSelectionKeys.iterator();
         while (keyIterator.hasNext())
@@ -93,6 +85,21 @@ public class Server
                 IOUtils.closeQuietly(messageSocketChannel);
             }
         }
+        try
+        {
+            if (SocketAcceptor.messageChannelsSelector != null)
+            {
+                SocketAcceptor.messageChannelsSelector.close();
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            IOUtils.closeQuietly(SocketAcceptor.messageChannelsSelector);
+        }
     }
 
 
@@ -104,5 +111,17 @@ public class Server
         {
             this.notify();
         }
+    }
+
+
+    public SocketAcceptor getSocketAcceptor()
+    {
+        return socketAcceptor;
+    }
+
+
+    public SocketProcessor getSocketProcessor()
+    {
+        return socketProcessor;
     }
 }

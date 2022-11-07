@@ -28,11 +28,11 @@ public class FileGetCommand extends Command
         File file = filesCache.getFile(fileName);
         if (file == null)
         {
-            writeToClient("SERVER: the requested file is not present in the repository!", (SocketChannel)clientSelectionKey.channel());
+            writeToClient("SERVER: the requested file is not present in the repository!", clientSocketChannel);
         }
         else
         {
-            writeToClient("SENDING " + file.getName() + " " + file.length(), (SocketChannel)clientSelectionKey.channel());
+            writeToClient("SENDING " + file.getName() + " " + file.length(), clientSocketChannel);
             try (
                             FileInputStream fin = new FileInputStream(file);
                             FileChannel fileChannel = fin.getChannel();

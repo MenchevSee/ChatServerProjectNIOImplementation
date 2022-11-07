@@ -22,7 +22,7 @@ public class ListAllFilesCommand extends Command
         String[] fileList = file.list();
         for (String fileName : fileList)
         {
-            writeToClient(fileName, (SocketChannel) clientSelectionKey.channel());
+            writeToClient(fileName, clientSocketChannel);
         }
     }
 }
