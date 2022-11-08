@@ -39,25 +39,5 @@ public class BroadcastMessageCommand extends Command
         }
     }
 
-    private void writeToAllClients(String clientMessage, boolean includeThisClient)
-    {
-        if (includeThisClient)
-        {
-            for (SelectionKey selectionKey : selectionKeys)
-            {
-                writeToClient(clientMessage, (SocketChannel) selectionKey.channel());
-            }
-        }
-        else
-        {
-            for (SelectionKey selectionKey : selectionKeys)
-            {
-                SocketChannel clientMessageSocketChannel = (SocketChannel)selectionKey.channel();
-                if (!clientMessageSocketChannel.equals(clientSocketChannel))
-                {
-                    writeToClient(clientMessage, (SocketChannel) selectionKey.channel());
-                }
-            }
-        }
-    }
+
 }

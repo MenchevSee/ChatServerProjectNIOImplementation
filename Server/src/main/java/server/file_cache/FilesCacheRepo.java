@@ -4,7 +4,6 @@ package server.file_cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import server.properties.PropertiesCache;
 import server.service.Server;
 
 import java.io.*;
@@ -93,8 +92,7 @@ public final class FilesCacheRepo
         }
         catch (IOException e)
         {
-            //            Server.LOGGER.error(e.getMessage(), e);
-            e.printStackTrace();
+            Server.logger.error(e);
             return false;
         }
     }
@@ -115,7 +113,7 @@ public final class FilesCacheRepo
         }
         catch (ExecutionException e)
         {
-            //            Server.LOGGER.error(e.getMessage(), e);
+            Server.logger.error(e);
         }
         return file;
     }

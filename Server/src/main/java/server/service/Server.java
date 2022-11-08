@@ -2,6 +2,8 @@ package server.service;
 
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import server.properties.PropertiesCache;
 
 import java.io.IOException;
@@ -20,22 +22,23 @@ public class Server
     private int tcpMessagesPort;
     private int tcpFilesPort;
     private int licenseCount;
-    public static final Properties properties = PropertiesCache.getPropertiesCache();
+    public static Properties properties = PropertiesCache.getPropertiesCache();
     public static AtomicBoolean drainOfServerInitiated = new AtomicBoolean(false);
     private AtomicBoolean closeAllClientConnections = new AtomicBoolean(false);
+    public static Logger logger = LogManager.getLogger();
 
 
-    public Server(int tcpMessagesPort, int tcpFilesPort, int licenseCount)
+    public Server()
     {
-        this.tcpMessagesPort = tcpMessagesPort;
-        this.tcpFilesPort = tcpFilesPort;
-        this.licenseCount = licenseCount;
+        this.tcpMessagesPort = Integer.parseInt(properties.getProperty("messagesServerPort"));
+        this.tcpFilesPort = Integer.parseInt(properties.getProperty("transferServerPort"));
+        this.licenseCount = Integer.parseInt(properties.getProperty("licencesCount", "3"));
     }
 
 
     public void start()
     {
-        socketAcceptor = new SocketAcceptor(this ,tcpMessagesPort, tcpFilesPort, licenseCount);
+        socketAcceptor = new SocketAcceptor(this, tcpMessagesPort, tcpFilesPort, licenseCount);
         socketProcessor = new SocketProcessor(this);
 
         Thread acceptorThread = new Thread(socketAcceptor);
@@ -63,7 +66,7 @@ public class Server
         }
         catch (InterruptedException e)
         {
-            e.printStackTrace();
+            logger.error(e);
         }
         SocketProcessor.commandExecutor.shutdownNow();
         Set<SelectionKey> messagesSelectionKeys = SocketAcceptor.messageChannelsSelector.keys();
@@ -78,7 +81,7 @@ public class Server
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                logger.error(e);
             }
             finally
             {
@@ -94,7 +97,7 @@ public class Server
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            logger.error(e);
         }
         finally
         {
@@ -111,12 +114,6 @@ public class Server
         {
             this.notify();
         }
-    }
-
-
-    public SocketAcceptor getSocketAcceptor()
-    {
-        return socketAcceptor;
     }
 
 

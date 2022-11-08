@@ -31,7 +31,7 @@ public final class PropertiesCache extends Properties
             }
             catch (IOException e)
             {
-//                Server.LOGGER.error(e.getMessage(), e);
+                Server.logger.error(e);
             }
         }
         return propertiesCache;

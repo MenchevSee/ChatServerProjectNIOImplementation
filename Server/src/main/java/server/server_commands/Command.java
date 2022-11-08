@@ -2,6 +2,7 @@ package server.server_commands;
 
 
 import server.file_cache.FilesCacheRepo;
+import server.service.Server;
 import server.service.SocketAcceptor;
 
 import java.io.*;
@@ -43,11 +44,31 @@ public abstract class Command implements Runnable
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Server.logger.error(e);
         }
     }
 
-
+    protected void writeToAllClients(String clientMessage, boolean includeThisClient)
+    {
+        if (includeThisClient)
+        {
+            for (SelectionKey selectionKey : selectionKeys)
+            {
+                writeToClient(clientMessage, (SocketChannel) selectionKey.channel());
+            }
+        }
+        else
+        {
+            for (SelectionKey selectionKey : selectionKeys)
+            {
+                SocketChannel clientMessageSocketChannel = (SocketChannel)selectionKey.channel();
+                if (!clientMessageSocketChannel.equals(clientSocketChannel))
+                {
+                    writeToClient(clientMessage, (SocketChannel) selectionKey.channel());
+                }
+            }
+        }
+    }
     public boolean getIsFileTransfer()
     {
         return isFileTransfer;

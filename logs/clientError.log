@@ -1,9 +1,0 @@
-11:27:08.848 [main] ERROR client.Client - .\clientConfig.properties (The system cannot find the file specified)
-java.io.FileNotFoundException: .\clientConfig.properties (The system cannot find the file specified)
-	at java.io.FileInputStream.open0(Native Method) ~[?:?]
-	at java.io.FileInputStream.open(FileInputStream.java:219) ~[?:?]
-	at java.io.FileInputStream.<init>(FileInputStream.java:157) ~[?:?]
-	at java.io.FileInputStream.<init>(FileInputStream.java:112) ~[?:?]
-	at properties.PropertiesCache.getPropertiesCache(PropertiesCache.java:29) ~[classes/:?]
-	at client.Client.<init>(Client.java:34) ~[classes/:?]
-	at client.ClientExecutor.main(ClientExecutor.java:9) ~[classes/:?]

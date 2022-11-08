@@ -1,8 +1,6 @@
 package properties;
 
 
-import client.Client;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,7 +29,7 @@ public class PropertiesCache extends Properties
             }
             catch (IOException e)
             {
-                Client.logger.error(e.getMessage(), e);
+//                Client.logger.error(e.getMessage(), e);
             }
         }
         return propertiesCache;

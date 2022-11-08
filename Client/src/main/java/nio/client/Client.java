@@ -2,6 +2,8 @@ package nio.client;
 
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import properties.PropertiesCache;
 
 import java.io.File;
@@ -10,7 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
@@ -23,11 +24,12 @@ public class Client implements Runnable
 {
     private SocketChannel messagesSocketChannel;
     private SocketChannel filesSocketChannel;
-    private String userName;
-    private Scanner scanner;
-    private ExecutorService filesTransferPool;
-    private PropertiesCache properties;
-    private File clientFilesDir;
+    private final String userName;
+    private final Scanner scanner;
+    private final ExecutorService filesTransferPool;
+    private final PropertiesCache properties;
+    private final File clientFilesDir;
+    private static final Logger logger = LogManager.getLogger();
 
 
     public Client()
@@ -36,12 +38,12 @@ public class Client implements Runnable
         try
         {
             this.messagesSocketChannel = SocketChannel.open();
-            this.messagesSocketChannel.connect(new InetSocketAddress("localhost", 9999));
-
+            this.messagesSocketChannel.connect(new InetSocketAddress(properties.getProperty("serverIp"),
+                                                                     Integer.parseInt(properties.getProperty("messageServerPort"))));
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            logger.error(e);
         }
         this.scanner = new Scanner(System.in);
         System.out.println("Enter your username for the group chat: ");
@@ -58,49 +60,26 @@ public class Client implements Runnable
     }
 
 
-    private void openFileSocketChannelConnection()
-    {
-        try
-        {
-            this.filesSocketChannel = SocketChannel.open();
-            this.filesSocketChannel.connect(new InetSocketAddress("localhost", 9998));
-            this.filesSocketChannel.configureBlocking(false);
-            while (!filesSocketChannel.finishConnect())
-            {
-                Thread.sleep(1000);
-            }
-            filesSocketChannel.write(ByteBuffer.wrap(userName.getBytes()));
-        }
-        catch (IOException | InterruptedException e)
-        {
-            e.printStackTrace();
-            closeEverything();
-        }
-    }
-
-
     private void sendMessage()
     {
-        Thread thread = new Thread(new Runnable()
-        {
-            @Override public void run()
-            {
-                while (messagesSocketChannel.isOpen())
-                {
-                    try
-                    {
-                        while (System.in.available() != 0)
-                        {
-                            clientMessageHandling(scanner.nextLine());
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
+        Thread thread = new Thread(() ->
+                                   {
+                                       while (messagesSocketChannel.isOpen())
+                                       {
+                                           try
+                                           {
+                                               while (System.in.available() != 0)
+                                               {
+                                                   clientMessageHandling(scanner.nextLine());
+                                               }
+                                           }
+                                           catch (IOException e)
+                                           {
+                                               logger.error(e);
+                                               closeEverything();
+                                           }
+                                       }
+                                   });
         thread.setDaemon(true);
         thread.start();
     }
@@ -117,9 +96,14 @@ public class Client implements Runnable
                 closeEverything();
                 break;
             case "SEND":
+                openFileSocketChannelConnection();
                 File file = new File(splitClientMessage[1]);
                 writeToServer("SEND " + file.getName() + " " + file.length());
                 sendFileToServer(file);
+                break;
+            case "FILE-GET":
+                openFileSocketChannelConnection();
+                writeToServer(clientMessage);
                 break;
             default:
                 writeToServer(clientMessage);
@@ -128,19 +112,39 @@ public class Client implements Runnable
     }
 
 
+    private void openFileSocketChannelConnection()
+    {
+        if (filesSocketChannel == null)
+        {
+            try
+            {
+                this.filesSocketChannel = SocketChannel.open();
+                this.filesSocketChannel.connect(new InetSocketAddress(properties.getProperty("serverIp"),
+                                                                      Integer.parseInt(properties.getProperty("transferServerPort"))));
+                this.filesSocketChannel.configureBlocking(false);
+                while (!filesSocketChannel.finishConnect())
+                {
+                    Thread.sleep(1000);
+                }
+                filesSocketChannel.write(ByteBuffer.wrap(userName.getBytes()));
+            }
+            catch (IOException | InterruptedException e)
+            {
+                logger.error(e);
+                closeEverything();
+            }
+        }
+    }
+
+
     private void sendFileToServer(File file)
     {
-        if (!filesSocketChannel.isOpen())
-        {
-            openFileSocketChannelConnection();
-        }
         filesTransferPool.execute(() ->
                                   {
                                       ByteBuffer readFileByteBuffer = ByteBuffer.allocate(4096);
                                       try (
                                                       FileInputStream fin = new FileInputStream(file);
-                                                      FileChannel fileChannel = fin.getChannel();
-                                      )
+                                                      FileChannel fileChannel = fin.getChannel();)
                                       {
                                           while (fileChannel.read(readFileByteBuffer) != -1)
                                           {
@@ -151,7 +155,8 @@ public class Client implements Runnable
                                       }
                                       catch (IOException e)
                                       {
-                                          e.printStackTrace();
+                                          logger.error(e);
+                                          closeEverything();
                                       }
                                   });
     }
@@ -171,7 +176,8 @@ public class Client implements Runnable
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            logger.error(e);
+            closeEverything();
         }
     }
 
@@ -188,22 +194,17 @@ public class Client implements Runnable
                 readByteBuffer.flip();
                 serverMessage = StandardCharsets.UTF_8.decode(readByteBuffer).toString();
                 readByteBuffer.clear();
-
-                //                    connection cut from server side
                 if (serverMessage.isEmpty())
                 {
+                    logger.info("The connection was cut from the server side!!!");
                     closeEverything();
                 }
                 serverMessageHandling(serverMessage);
             }
-            catch (AsynchronousCloseException e)
-            {
-                //                connection cut from serve side!!!
-                closeEverything();
-            }
             catch (IOException e)
             {
-                e.printStackTrace();
+                logger.error(e);
+                closeEverything();
             }
         }
     }
@@ -230,44 +231,38 @@ public class Client implements Runnable
 
     private void receiveFileFromServer(String fileName, String fileLength)
     {
-        if (!filesSocketChannel.isOpen())
-        {
-            openFileSocketChannelConnection();
-        }
-        filesTransferPool.execute(new Runnable()
-        {
-            @Override public void run()
-            {
-                if (!clientFilesDir.isDirectory())
-                {
-                    clientFilesDir.mkdir();
-                }
-                int fileLengthInt = Integer.parseInt(fileLength);
-                File file = new File(clientFilesDir, fileName);
-                try (
-                                FileOutputStream out = new FileOutputStream(file);
-                                FileChannel fileChannel = out.getChannel())
-                {
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(4096);
-                    int bytesRead = 0;
-                    while (bytesRead < fileLengthInt)
-                    {
-                        bytesRead += filesSocketChannel.read(byteBuffer);
-                        byteBuffer.flip();
-                        while (byteBuffer.hasRemaining())
-                        {
-                            fileChannel.write(byteBuffer);
-                        }
-                        byteBuffer.clear();
-                    }
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-                System.out.println("File " + fileName + " was successfully downloaded!");
-            }
-        });
+        filesTransferPool.execute(() ->
+                                  {
+                                      if (!clientFilesDir.isDirectory())
+                                      {
+                                          clientFilesDir.mkdir();
+                                      }
+                                      int fileLengthInt = Integer.parseInt(fileLength);
+                                      File file = new File(clientFilesDir, fileName);
+                                      try (
+                                                      FileOutputStream out = new FileOutputStream(file);
+                                                      FileChannel fileChannel = out.getChannel())
+                                      {
+                                          ByteBuffer byteBuffer = ByteBuffer.allocate(4096);
+                                          int bytesRead = 0;
+                                          while (bytesRead < fileLengthInt)
+                                          {
+                                              bytesRead += filesSocketChannel.read(byteBuffer);
+                                              byteBuffer.flip();
+                                              while (byteBuffer.hasRemaining())
+                                              {
+                                                  fileChannel.write(byteBuffer);
+                                              }
+                                              byteBuffer.clear();
+                                          }
+                                      }
+                                      catch (IOException e)
+                                      {
+                                          logger.error(e);
+                                          closeEverything();
+                                      }
+                                      System.out.println("File " + fileName + " was successfully downloaded!");
+                                  });
     }
 
 
@@ -287,18 +282,17 @@ public class Client implements Runnable
             {
                 scanner.close();
             }
-
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            logger.error(e);
         }
         finally
         {
             IOUtils.closeQuietly(messagesSocketChannel, filesSocketChannel, scanner);
             if (filesTransferPool != null)
             {
-                filesTransferPool.shutdown();
+                filesTransferPool.shutdownNow();
             }
         }
     }

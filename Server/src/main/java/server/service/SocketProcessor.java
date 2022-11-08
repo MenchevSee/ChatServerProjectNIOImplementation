@@ -12,8 +12,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 public class SocketProcessor implements Runnable
@@ -21,11 +20,14 @@ public class SocketProcessor implements Runnable
     public static ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
     private CommandFactory commandFactory;
     public static final ExecutorService fileTransferPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 3);
+    private ScheduledExecutorService idleSocketsChecker;
+    private static Long maximumIdleTimeAllowed = Long.parseLong(Server.properties.getProperty("timeToLive", "60")) * 1000L;
 
 
     public SocketProcessor(Server server)
     {
         this.commandFactory = new CommandFactory(server);
+        this.idleSocketsChecker = new ScheduledThreadPoolExecutor(1);
     }
 
 
@@ -45,7 +47,7 @@ public class SocketProcessor implements Runnable
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                Server.logger.error(e);
             }
             Set<SelectionKey> selectedKeys = SocketAcceptor.messageChannelsSelector.selectedKeys();
             Iterator<SelectionKey> keyIterator = selectedKeys.iterator();
@@ -74,6 +76,7 @@ public class SocketProcessor implements Runnable
                             selectionKey.attach(userName);
                             Client client = new Client(userName);
                             client.setMessagesChannel((SocketChannel)selectionKey.channel());
+                            client.setIdleCheckerIOU(idleSocketsChecker.scheduleAtFixedRate(client, maximumIdleTimeAllowed, maximumIdleTimeAllowed, TimeUnit.MILLISECONDS));
                             Command command = commandFactory.getInstance(
                                             "SERVER: " + userName + " has entered the chat!",
                                             selectionKey, "excludeThisClient");
@@ -94,18 +97,14 @@ public class SocketProcessor implements Runnable
                     }
                     else
                     {
-                        Command command = commandFactory.getInstance(clientMessage, selectionKey,"excludeThisClient");
+                        Command command = commandFactory.getInstance(clientMessage, selectionKey, "excludeThisClient");
                         commandExecutor.execute(command);
                     }
                 }
                 catch (IOException e)
                 {
-                    if (e.getMessage().contains("An existing connection was forcibly closed by the remote host"))
-                    {
-                        SocketProcessor.closeClientConnection(selectionKey);
-                        continue;
-                    }
-                    e.printStackTrace();
+                    Server.logger.info("Connection was closed from the client side!!!");
+                    continue;
                 }
                 keyIterator.remove();
             }
@@ -131,7 +130,7 @@ public class SocketProcessor implements Runnable
                     }
                     catch (IOException e)
                     {
-                        e.printStackTrace();
+                        Server.logger.error(e);
                     }
                     Set<SelectionKey> selectionKeys = SocketAcceptor.fileChannelsSelector.selectedKeys();
                     Iterator<SelectionKey> keyIterator = selectionKeys.iterator();
@@ -158,7 +157,7 @@ public class SocketProcessor implements Runnable
                                 }
                                 catch (IOException e)
                                 {
-                                    e.printStackTrace();
+                                    Server.logger.error(e);
                                 }
                             }
                         }
@@ -169,7 +168,6 @@ public class SocketProcessor implements Runnable
         thread.setDaemon(true);
         thread.start();
     }
-
 
     public static void closeClientConnection(SelectionKey clientSelectionKey)
     {

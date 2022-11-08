@@ -1,13 +1,15 @@
 package server.service;
 
 
+import org.apache.logging.log4j.LogManager;
 
 
 public class ServerExecutor
 {
     public static void main(String[] args)
     {
-        Server server = new Server(9999,9998,2);
+        System.setProperty("log4j2.configurationFile", "log4j2.xml");
+        Server server = new Server();
         server.start();
     }
 }

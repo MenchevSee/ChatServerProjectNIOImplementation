@@ -29,8 +29,7 @@ public class SocketAcceptor implements Runnable
     private Selector acceptSocketChannelsSelector;
     private ServerSocketChannel messagesChannel;
     private ServerSocketChannel filesChannel;
-    private ScheduledExecutorService waitingPool = new ScheduledThreadPoolExecutor(
-                    Runtime.getRuntime().availableProcessors() / 3);
+    private ScheduledExecutorService waitingPool;
 
     static
     {
@@ -45,14 +44,13 @@ public class SocketAcceptor implements Runnable
         }
     }
 
-    public SocketAcceptor(Server server,int tcpMessagesPort, int tcpFilesPort, int licenseCount)
+    public SocketAcceptor(Server server, int tcpMessagesPort, int tcpFilesPort, int licenseCount)
     {
         this.server = server;
         this.licenseManagement = new LicenseManager(licenseCount);
         this.tcpMessagesPort = tcpMessagesPort;
         this.tcpFilesPort = tcpFilesPort;
-        this.waitingPool = new ScheduledThreadPoolExecutor(
-                        Runtime.getRuntime().availableProcessors() / 3);
+        this.waitingPool = new ScheduledThreadPoolExecutor(Runtime.getRuntime().availableProcessors() / 3);
     }
 
 
@@ -72,7 +70,7 @@ public class SocketAcceptor implements Runnable
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Server.logger.error(e);
         }
         WaitHandler.licenseManager = licenseManagement;
         listenForIncomingConnections();
@@ -86,10 +84,14 @@ public class SocketAcceptor implements Runnable
             try
             {
                 acceptSocketChannelsSelector.select();
+                if (!acceptSocketChannelsSelector.isOpen())
+                {
+                    break;
+                }
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                Server.logger.error(e);
             }
             Set<SelectionKey> selectedKeys = acceptSocketChannelsSelector.selectedKeys();
 
@@ -111,7 +113,7 @@ public class SocketAcceptor implements Runnable
                         }
                         catch (IOException e)
                         {
-                            e.printStackTrace();
+                            Server.logger.error(e);
                             break;
                         }
                     }
@@ -120,14 +122,13 @@ public class SocketAcceptor implements Runnable
                         try
                         {
                             SocketChannel clientMessageChannel = channel.accept();
-                            clientMessageChannel.configureBlocking(false);
-                            WaitHandler waitHandler = new WaitHandler(server.getSocketProcessor() ,clientMessageChannel);
+                            WaitHandler waitHandler = new WaitHandler(server.getSocketProcessor(), clientMessageChannel);
                             WaitHandler.waitingClientHandlerList.add(waitHandler);
-                            waitHandler.setFuture(waitingPool.scheduleAtFixedRate(waitHandler, 0, 1, TimeUnit.SECONDS));
+                            waitHandler.setFuture(waitingPool.scheduleAtFixedRate(waitHandler, 0, 30, TimeUnit.SECONDS));
                         }
                         catch (IOException e)
                         {
-                            e.printStackTrace();
+                            Server.logger.error(e);
                         }
                     }
                 }
@@ -141,7 +142,7 @@ public class SocketAcceptor implements Runnable
                     }
                     catch (IOException e)
                     {
-                        e.printStackTrace();
+                        Server.logger.error(e);
                         break;
                     }
                 }
@@ -163,13 +164,12 @@ public class SocketAcceptor implements Runnable
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Server.logger.error(e);
         }
         finally
         {
             IOUtils.closeQuietly(messagesChannel, filesChannel, fileChannelsSelector, acceptSocketChannelsSelector);
         }
-
         closeFileChannelSockets();
     }
 
@@ -184,7 +184,7 @@ public class SocketAcceptor implements Runnable
             }
             catch (InterruptedException e)
             {
-                e.printStackTrace();
+                Server.logger.error(e);
             }
         }
 
@@ -193,22 +193,20 @@ public class SocketAcceptor implements Runnable
         {
             try
             {
-                client.getValue().getFilesChannel().close();
+                SocketChannel fileSocketConnection = client.getValue().getFilesChannel();
+                if (fileSocketConnection != null)
+                {
+                    fileSocketConnection.close();
+                }
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                Server.logger.error(e);
             }
             finally
             {
                 IOUtils.closeQuietly(client.getValue().getFilesChannel());
             }
         }
-    }
-
-
-    public LicenseManagement getLicenseManagement()
-    {
-        return licenseManagement;
     }
 }

@@ -2,6 +2,7 @@ package server.server_commands;
 
 
 import server.client.Client;
+import server.service.Server;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -51,7 +52,7 @@ public class FileGetCommand extends Command
             }
             catch (IOException e)
             {
-                e.printStackTrace();
+                Server.logger.error(e);
             }
         }
     }

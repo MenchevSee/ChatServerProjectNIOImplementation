@@ -40,11 +40,24 @@ public class WaitHandler implements Runnable
         this.socketProcessor = socketProcessor;
         this.commandFactory = socketProcessor.getCommandFactory();
         this.clientMessageSocket = messageSocket;
+        this.timeCounter = 1;
     }
 
 
     @Override public void run()
     {
+        try
+        {
+            while (!clientMessageSocket.finishConnect())
+            {
+                Thread.sleep(1000);
+            }
+        }
+        catch (IOException | InterruptedException e)
+        {
+            Server.logger.error(e);
+        }
+
         if (this.clientUserName == null)
         {
             assignUserName();
@@ -56,8 +69,7 @@ public class WaitHandler implements Runnable
             closeEverything();
         }
 
-        timeCounter++;
-        if (!clientMessageSocket.isOpen())
+        if (clientMessageSocket.isOpen())
         {
             int rankInQueue = WaitHandler.waitingClientHandlerList.indexOf(this);
             if (licenseManager.verify() && rankInQueue == 0)
@@ -65,24 +77,28 @@ public class WaitHandler implements Runnable
                 future.cancel(true);
                 waitingClientHandlerList.remove(this);
                 Client client = new Client(clientUserName);
+                Client.clients.put(clientUserName, client);
                 client.setMessagesChannel(clientMessageSocket);
                 try
                 {
-                    SelectionKey clientSelectionKey = clientMessageSocket.register(SocketAcceptor.messageChannelsSelector, SelectionKey.OP_READ);
+                    clientMessageSocket.configureBlocking(false);
+                    SelectionKey clientSelectionKey = clientMessageSocket.register(SocketAcceptor.messageChannelsSelector,
+                                                                                   SelectionKey.OP_READ);
                     clientSelectionKey.attach(clientUserName);
                     Command command = commandFactory.getInstance(
                                     "SERVER: " + clientUserName + " has entered the chat!",
                                     clientSelectionKey, "excludeThisClient");
                     SocketProcessor.commandExecutor.execute(command);
                 }
-                catch (ClosedChannelException e)
+                catch (IOException e)
                 {
-                    e.printStackTrace();
+                    Server.logger.error(e);
                 }
             }
             else
             {
                 writeToClient("You are number " + (rankInQueue + 1) + " in the waiting queue!");
+                timeCounter++;
             }
         }
     }
@@ -100,11 +116,10 @@ public class WaitHandler implements Runnable
             {
                 clientMessageSocket.close();
             }
-
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Server.logger.error(e);
         }
         finally
         {
@@ -119,18 +134,16 @@ public class WaitHandler implements Runnable
         ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
         try
         {
-            while (clientMessageSocket.read(byteBuffer) > 0)
-            {
-                clientMessageSocket.read(byteBuffer);
-            }
+            clientMessageSocket.read(byteBuffer);
             byteBuffer.flip();
-            this.clientUserName = StandardCharsets.UTF_8.decode(byteBuffer).toString();
+            this.clientUserName = StandardCharsets.UTF_8.decode(byteBuffer).toString().split(" ")[1];
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            Server.logger.error(e);
         }
     }
+
 
     private void writeToClient(String clientMessage)
     {
@@ -145,7 +158,7 @@ public class WaitHandler implements Runnable
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Server.logger.error(e);
         }
     }
 
