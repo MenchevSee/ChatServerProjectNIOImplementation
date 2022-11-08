@@ -13,6 +13,7 @@ public final class PropertiesCache extends Properties
 {
     private static PropertiesCache propertiesCache;
 
+
     private PropertiesCache()
     {
         super();
@@ -27,7 +28,8 @@ public final class PropertiesCache extends Properties
             try
             {
                 propertiesCache.load(new BufferedInputStream(
-                                new FileInputStream("C:\\DEV\\workspace\\ChatServerProjectNIOImplementation\\Server\\src\\main\\resources\\serverConfig.properties")));
+                                new FileInputStream(
+                                                "C:\\DEV\\workspace\\ChatServerProjectNIOImplementation\\Server\\src\\main\\resources\\serverConfig.properties")));
             }
             catch (IOException e)
             {

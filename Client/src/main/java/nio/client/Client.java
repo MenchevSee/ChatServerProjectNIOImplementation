@@ -96,13 +96,19 @@ public class Client implements Runnable
                 closeEverything();
                 break;
             case "SEND":
-                openFileSocketChannelConnection();
+                if (filesSocketChannel == null)
+                {
+                    openFileSocketChannelConnection();
+                }
                 File file = new File(splitClientMessage[1]);
                 writeToServer("SEND " + file.getName() + " " + file.length());
                 sendFileToServer(file);
                 break;
             case "FILE-GET":
-                openFileSocketChannelConnection();
+                if (filesSocketChannel == null)
+                {
+                    openFileSocketChannelConnection();
+                }
                 writeToServer(clientMessage);
                 break;
             default:
@@ -114,25 +120,22 @@ public class Client implements Runnable
 
     private void openFileSocketChannelConnection()
     {
-        if (filesSocketChannel == null)
+        try
         {
-            try
+            this.filesSocketChannel = SocketChannel.open();
+            this.filesSocketChannel.connect(new InetSocketAddress(properties.getProperty("serverIp"),
+                                                                  Integer.parseInt(properties.getProperty("transferServerPort"))));
+            this.filesSocketChannel.configureBlocking(false);
+            while (!filesSocketChannel.finishConnect())
             {
-                this.filesSocketChannel = SocketChannel.open();
-                this.filesSocketChannel.connect(new InetSocketAddress(properties.getProperty("serverIp"),
-                                                                      Integer.parseInt(properties.getProperty("transferServerPort"))));
-                this.filesSocketChannel.configureBlocking(false);
-                while (!filesSocketChannel.finishConnect())
-                {
-                    Thread.sleep(1000);
-                }
-                filesSocketChannel.write(ByteBuffer.wrap(userName.getBytes()));
+                Thread.sleep(1000);
             }
-            catch (IOException | InterruptedException e)
-            {
-                logger.error(e);
-                closeEverything();
-            }
+            filesSocketChannel.write(ByteBuffer.wrap(userName.getBytes()));
+        }
+        catch (IOException | InterruptedException e)
+        {
+            logger.error(e);
+            closeEverything();
         }
     }
 

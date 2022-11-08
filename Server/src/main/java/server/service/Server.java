@@ -19,9 +19,9 @@ public class Server
 {
     private SocketAcceptor socketAcceptor;
     private SocketProcessor socketProcessor;
-    private int tcpMessagesPort;
-    private int tcpFilesPort;
-    private int licenseCount;
+    private final int tcpMessagesPort;
+    private final int tcpFilesPort;
+    private final int licenseCount;
     public static Properties properties = PropertiesCache.getPropertiesCache();
     public static AtomicBoolean drainOfServerInitiated = new AtomicBoolean(false);
     private AtomicBoolean closeAllClientConnections = new AtomicBoolean(false);
@@ -68,6 +68,7 @@ public class Server
         {
             logger.error(e);
         }
+        SocketProcessor.idleSocketsChecker.shutdownNow();
         SocketProcessor.commandExecutor.shutdownNow();
         Set<SelectionKey> messagesSelectionKeys = SocketAcceptor.messageChannelsSelector.keys();
         Iterator<SelectionKey> keyIterator = messagesSelectionKeys.iterator();

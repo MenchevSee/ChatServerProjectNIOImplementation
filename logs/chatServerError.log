@@ -1,0 +1,1 @@
+10:28:36.263 [pool-5-thread-1] ERROR server.service.Server - java.nio.channels.ClosedChannelException

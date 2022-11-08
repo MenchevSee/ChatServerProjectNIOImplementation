@@ -18,7 +18,7 @@ public abstract class Command implements Runnable
     protected SelectionKey clientSelectionKey;
     protected Set<SelectionKey> selectionKeys;
     protected FilesCacheRepo filesCache;
-    private boolean isFileTransfer;
+    private final boolean isFileTransfer;
     protected SocketChannel clientSocketChannel;
 
 
@@ -30,6 +30,7 @@ public abstract class Command implements Runnable
         this.selectionKeys = SocketAcceptor.messageChannelsSelector.keys();
         this.filesCache = FilesCacheRepo.getFilesCache();
     }
+
 
     protected void writeToClient(String clientMessage, SocketChannel clientMessageSocketChannel)
     {
@@ -48,13 +49,14 @@ public abstract class Command implements Runnable
         }
     }
 
+
     protected void writeToAllClients(String clientMessage, boolean includeThisClient)
     {
         if (includeThisClient)
         {
             for (SelectionKey selectionKey : selectionKeys)
             {
-                writeToClient(clientMessage, (SocketChannel) selectionKey.channel());
+                writeToClient(clientMessage, (SocketChannel)selectionKey.channel());
             }
         }
         else
@@ -64,11 +66,13 @@ public abstract class Command implements Runnable
                 SocketChannel clientMessageSocketChannel = (SocketChannel)selectionKey.channel();
                 if (!clientMessageSocketChannel.equals(clientSocketChannel))
                 {
-                    writeToClient(clientMessage, (SocketChannel) selectionKey.channel());
+                    writeToClient(clientMessage, (SocketChannel)selectionKey.channel());
                 }
             }
         }
     }
+
+
     public boolean getIsFileTransfer()
     {
         return isFileTransfer;

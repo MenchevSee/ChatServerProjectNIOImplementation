@@ -4,7 +4,6 @@ package server.waitHandler;
 import org.apache.commons.io.IOUtils;
 import server.client.Client;
 import server.license.LicenseManagement;
-import server.license.LicenseManager;
 import server.server_commands.Command;
 import server.server_commands.CommandFactory;
 import server.service.Server;
@@ -13,7 +12,6 @@ import server.service.SocketProcessor;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
@@ -25,19 +23,17 @@ import java.util.concurrent.Future;
 
 public class WaitHandler implements Runnable
 {
-    private SocketProcessor socketProcessor;
-    private SocketChannel clientMessageSocket;
+    private final SocketChannel clientMessageSocket;
     private String clientUserName;
     public static final List<WaitHandler> waitingClientHandlerList = Collections.synchronizedList(new ArrayList<>());
     public static LicenseManagement licenseManager;
     private Future future;
     private int timeCounter;
-    private CommandFactory commandFactory;
+    private final CommandFactory commandFactory;
 
 
     public WaitHandler(SocketProcessor socketProcessor, SocketChannel messageSocket)
     {
-        this.socketProcessor = socketProcessor;
         this.commandFactory = socketProcessor.getCommandFactory();
         this.clientMessageSocket = messageSocket;
         this.timeCounter = 1;
@@ -85,9 +81,8 @@ public class WaitHandler implements Runnable
                     SelectionKey clientSelectionKey = clientMessageSocket.register(SocketAcceptor.messageChannelsSelector,
                                                                                    SelectionKey.OP_READ);
                     clientSelectionKey.attach(clientUserName);
-                    Command command = commandFactory.getInstance(
-                                    "SERVER: " + clientUserName + " has entered the chat!",
-                                    clientSelectionKey, "excludeThisClient");
+                    Command command = commandFactory.getInstance("SERVER: " + clientUserName + " has entered the chat!", clientSelectionKey,
+                                                                 "excludeThisClient");
                     SocketProcessor.commandExecutor.execute(command);
                 }
                 catch (IOException e)
@@ -125,7 +120,6 @@ public class WaitHandler implements Runnable
         {
             IOUtils.closeQuietly(clientMessageSocket);
         }
-
     }
 
 

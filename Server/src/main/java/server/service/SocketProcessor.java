@@ -17,17 +17,16 @@ import java.util.concurrent.*;
 
 public class SocketProcessor implements Runnable
 {
-    public static ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
-    private CommandFactory commandFactory;
+    public static final ExecutorService commandExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2);
+    private final CommandFactory commandFactory;
     public static final ExecutorService fileTransferPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 3);
-    private ScheduledExecutorService idleSocketsChecker;
-    private static Long maximumIdleTimeAllowed = Long.parseLong(Server.properties.getProperty("timeToLive", "60")) * 1000L;
+    public static final ScheduledExecutorService idleSocketsChecker = new ScheduledThreadPoolExecutor(1);
+    private static final Long maximumIdleTimeAllowed = Long.parseLong(Server.properties.getProperty("timeToLive", "60")) * 1000L;
 
 
     public SocketProcessor(Server server)
     {
         this.commandFactory = new CommandFactory(server);
-        this.idleSocketsChecker = new ScheduledThreadPoolExecutor(1);
     }
 
 
@@ -65,7 +64,6 @@ public class SocketProcessor implements Runnable
                     byteBuffer.flip();
                     String clientMessage = StandardCharsets.UTF_8.decode(byteBuffer).toString();
                     byteBuffer.clear();
-                    System.out.println(clientMessage);
 
                     //                in case this is the first input from the client - a.k.a. its username
                     if (selectionKey.attachment() == null)
@@ -76,18 +74,13 @@ public class SocketProcessor implements Runnable
                             selectionKey.attach(userName);
                             Client client = new Client(userName);
                             client.setMessagesChannel((SocketChannel)selectionKey.channel());
-                            client.setIdleCheckerIOU(idleSocketsChecker.scheduleAtFixedRate(client, maximumIdleTimeAllowed, maximumIdleTimeAllowed, TimeUnit.MILLISECONDS));
+                            client.setIdleCheckerIOU(
+                                            idleSocketsChecker.scheduleAtFixedRate(client, maximumIdleTimeAllowed, maximumIdleTimeAllowed,
+                                                                                   TimeUnit.MILLISECONDS));
                             Command command = commandFactory.getInstance(
                                             "SERVER: " + userName + " has entered the chat!",
                                             selectionKey, "excludeThisClient");
-                            if (command.getIsFileTransfer())
-                            {
-                                fileTransferPool.execute(command);
-                            }
-                            else
-                            {
-                                commandExecutor.execute(command);
-                            }
+                            commandExecutor.execute(command);
                         }
                         else
                         {
@@ -98,7 +91,15 @@ public class SocketProcessor implements Runnable
                     else
                     {
                         Command command = commandFactory.getInstance(clientMessage, selectionKey, "excludeThisClient");
-                        commandExecutor.execute(command);
+                        Client.clients.get(clientMessage.split(":")[0]).setTimeStampLastActive(System.currentTimeMillis());
+                        if (command.getIsFileTransfer())
+                        {
+                            fileTransferPool.execute(command);
+                        }
+                        else
+                        {
+                            commandExecutor.execute(command);
+                        }
                     }
                 }
                 catch (IOException e)
@@ -169,11 +170,11 @@ public class SocketProcessor implements Runnable
         thread.start();
     }
 
+
     public static void closeClientConnection(SelectionKey clientSelectionKey)
     {
         Client.clients.get(clientSelectionKey.attachment()).closeClientConnection();
         clientSelectionKey.cancel();
-        System.out.println("closing client connection!");
     }
 
 

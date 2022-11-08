@@ -19,7 +19,7 @@ public class AdminDrainCommand extends Command
     @Override public void run()
     {
         writeToAllClients("SERVER: The server will stop responding in 1 minute. \n" +
-                                          "All uploads and downloads of files are restricted from now til shutdown!", true);
+                                          "All uploads and downloads of files are restricted from now till shutdown!", true);
         server.drainServer();
     }
 }

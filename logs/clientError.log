@@ -1,0 +1,3 @@
+09:30:14.846 [pool-2-thread-1] ERROR nio.client.Client - java.nio.channels.ClosedChannelException
+10:24:45.770 [Thread-0] ERROR nio.client.Client - java.nio.channels.AsynchronousCloseException
+10:24:45.773 [Thread-1] ERROR nio.client.Client - java.io.IOException: Stream closed

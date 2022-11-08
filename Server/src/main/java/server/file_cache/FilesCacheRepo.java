@@ -17,7 +17,7 @@ public final class FilesCacheRepo
 {
     private static FilesCacheRepo filesCache;
     private final LoadingCache<String, File> cachedFiles;
-    private File serverRepo;
+    private final File serverRepo;
 
 
     private FilesCacheRepo()
@@ -62,7 +62,6 @@ public final class FilesCacheRepo
      * Adding a file to repository.
      *
      * @param fileName            the file name to be added
-     * @param bufferedInputStream the buffered stream from the client's socket
      * @param fileLength          the length of the file to be added
      */
     public boolean addFile(String fileName, SocketChannel fileChannelSocket, int fileLength)

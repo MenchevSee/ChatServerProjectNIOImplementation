@@ -29,7 +29,7 @@ public class SocketAcceptor implements Runnable
     private Selector acceptSocketChannelsSelector;
     private ServerSocketChannel messagesChannel;
     private ServerSocketChannel filesChannel;
-    private ScheduledExecutorService waitingPool;
+    private final ScheduledExecutorService waitingPool;
 
     static
     {

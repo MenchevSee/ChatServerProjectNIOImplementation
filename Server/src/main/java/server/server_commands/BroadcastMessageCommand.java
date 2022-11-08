@@ -8,7 +8,7 @@ import java.nio.channels.SocketChannel;
 public class BroadcastMessageCommand extends Command
 {
     private final String clientMessage;
-    private String type;
+    private final String type;
 
 
     public BroadcastMessageCommand(String clientMessage, SelectionKey clientSelectionKey, boolean threadPoolFlag, String type)
@@ -38,6 +38,5 @@ public class BroadcastMessageCommand extends Command
             writeToClient(clientMessage, clientSocketChannel);
         }
     }
-
 
 }

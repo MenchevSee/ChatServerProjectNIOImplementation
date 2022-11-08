@@ -8,7 +8,8 @@ import java.nio.channels.SelectionKey;
 
 public class CommandFactory
 {
-    private Server server;
+    private final Server server;
+
 
     public CommandFactory(Server server)
     {
